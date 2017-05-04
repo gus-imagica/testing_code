@@ -13,7 +13,7 @@ import numpy as np
 devices = sb.list_devices()
 print(devices)
 spec = sb.Spectrometer(devices[0])
-spec.integration_time_micros(2000) # This is the minimum
+spec.integration_time_micros(1500) # This is the minimum
 spec.minimum_integration_time_micros
 specData = spec.spectrum()
 index_max = np.argmax(specData[1])
