@@ -64,6 +64,12 @@ class keysight(object):
     def set_timeout(self, time_ms):
         self.timeout = time_ms
         self.inst.timeout = self.timeout
+        
+    def set_display(self, ON):
+        if ON:
+            self.inst.write(":DISP:ENAB ON")
+        else:
+            self.inst.write(":DISP:ENAB OFF")
     
     def enable_sensing(self):
         self.inst.write(":INP ON")
@@ -75,7 +81,10 @@ class keysight(object):
         self.inst.write(":SENS:CURR:APER "+str(time_s))
     
     def set_range(self, curr_amp):
-        self.inst.write(":SENS:CURR:RANG "+srt(curr_amp))
+        self.inst.write(":SENS:CURR:RANG "+str(curr_amp))
+        
+    def enable_output_voltage(self):
+        self.inst.write(":OUTP ON")
         
     def set_output_voltage(self, volt):
         self.inst.write(":SOUR:VOLT "+str(volt))
