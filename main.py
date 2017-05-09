@@ -6,6 +6,7 @@ Created on Thu May  4 11:05:43 2017
 """
 
 import keysight
+import newportTLS
 import pyvisa
 import time
 
@@ -31,6 +32,8 @@ def analyse_dark_current(inst, start_voltage, stop_voltage, steps):
         print(inst.inst.query(":sens:data? curr, 1"))
 
 try:
+#    inst = newportTLS.TLS()
+    
     inst = keysight.keysight()
     
     inst.enable_output_voltage()
@@ -41,8 +44,9 @@ try:
     
     analyse_dark_current(inst,0,5,15)
     
-#    inst.get_current()
-#    inst.get_temperature()
+    inst.get_current()
+    inst.get_temperature()
 except pyvisa.errors.VisaIOError as e:
     print("Timed out waiting for a response. Make sure all sensors are connected.")
+    print(e)
 
