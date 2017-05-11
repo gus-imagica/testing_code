@@ -7,9 +7,9 @@ Created on Tue May  2 14:05:22 2017
 
 import visa
 
-class keysight(object):
+class Keysight(object):
     
-    def __init__(self, self_cal = False, self_test = False, timeout_ms = 10000, default_connection = 0):
+    def __init__(self, self_cal = False, self_test = False, timeout_ms = 5000, default_connection = 0):
         # Find resources
         rm = visa.ResourceManager()
         rl = rm.list_resources()
@@ -27,6 +27,8 @@ class keysight(object):
             self.self_test()
             
         self.reset()
+        self.enable_output_voltage()
+        self.enable_sensing()
         
     
     # Resets to default settings
@@ -75,7 +77,11 @@ class keysight(object):
         self.inst.write(":INP ON")
     
     def get_current(self):
-        print(self.inst.query(":MEAS:CURR?"))
+        try:
+            curr = float(self.inst.query(":MEAS:CURR?"))
+        except Exception:
+            curr = None
+        return curr
         
     def set_speed(self, time_s):
         self.inst.write(":SENS:CURR:APER "+str(time_s))
@@ -87,14 +93,55 @@ class keysight(object):
         self.inst.write(":OUTP ON")
         
     def set_output_voltage(self, volt):
-        self.inst.write(":SOUR:VOLT "+str(volt))
+        if volt < 20 and volt >= 0: # Limited for the photodiode opperation
+            self.inst.write(":SOUR:VOLT "+str(volt))
         
     def stop_output_voltage(self):
         self.inst.write(":OUTP OFF")
         
     def get_temperature(self):
-        print(self.inst.query(":MEAS:TEMP?"))
+        try:
+            temp = float(self.inst.query(":SYST:TEMP?"))
+        except Exception:
+            temp = None
+        return temp
+    
+    def set_aper(self, time_ms):
+        self.inst.write(":SENS:CURR:APER "+str(time_ms))
         
+    def auto_aper(self, ON):
+        self.inst.write(":SENS:CURR:APER:AUTO "+str(ON))
+        
+    def get_aper(self):
+        try:
+            temp = float(self.inst.query(":SENS:CURR:APER?"))
+        except Exception:
+            temp = None
+        return temp
+    
+    # returns temperature and current measurements for each of the voltages
+    def current_test(self, voltages, curr_range = 2E-6, measure_temp = True, aper_time_s = None):
+        self.set_range(curr_range)
+        
+        if aper_time_s is not None:
+            self.auto_aper(False)
+            self.set_aper(aper_time_s)
+        else:
+            self.auto_aper(True)
+            
+        data = []
+        for volt in voltages:
+            self.set_output_voltage(volt)
+            datum = [self.get_current()]
+            if measure_temp:
+                temp = self.get_temperature()
+                datum.append(temp)
+            data.append(datum)
+        return data
+    
+    def close(self):
+        self.inst.close()
+
 #    def main():
 #        inst = keysight()
 #        inst.enable_sensing()

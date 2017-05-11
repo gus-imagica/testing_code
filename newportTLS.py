@@ -9,7 +9,7 @@ import serial
 
 class TLS(object):
     
-    def __init__(self, port = "COM5", timeout_s = 1):
+    def __init__(self, port = "COM5", timeout_s = 5):
         # Find resources
         self.ser = serial.Serial(port, timeout = timeout_s, baudrate = 9600, bytesize=8, parity = 'N', stopbits = 1)
         
@@ -20,11 +20,11 @@ class TLS(object):
     def command(self, string):
         cmd = string+'\r\n'
         self.ser.write(cmd.encode("utf-8"))
-        out = self.ser.read(100)
-        if len(out)>0:
-            response = out.decode('ascii')
+        echo = self.ser.readline()
+        if len(echo)>0:
+            echo = echo.decode('ascii')
         # print('Receiving...'+out.decode('ascii'))
-        if string in response: # responses always start with the command
+        if string in echo: # responses always start with the command
             return 1
         else:
             return 0        
@@ -33,12 +33,14 @@ class TLS(object):
     def query(self, string):
         cmd = string+'\r\n'
         self.ser.write(cmd.encode("utf-8"))
-        out = self.ser.read(100)
+        echo = self.ser.readline()
+        out = self.ser.readline()
         if len(out)>0:
-            response = out.decode('ascii')
-        # print('Receiving...'+out.decode('ascii'))
-        resp = response.replace(cmd, "", 1) # responses always start with the command
-        return resp
+            out = out.decode('ascii')
+        else:
+            print("No response")
+            out = None
+        return out
     
     # set the output wavelength to lam. Will cut off at 100
     def set_lambda(self, lam):
@@ -56,7 +58,11 @@ class TLS(object):
     def get_lambda(self):
         ret = self.query("WAVE?")
         if ret is not None:
-            return float(ret)
+            try:
+                return float(ret)
+            except Exception:
+                print("response to WAVE? "+ret)
+                return -1
         else:
             return None
     
@@ -64,6 +70,22 @@ class TLS(object):
     def step_lambda(self, steps=1):
         steps = int(steps)
         return self.command("STEP "+steps)
+    
+    # True closes the shutter and False opens it.
+    def shutter(self, engaged):
+        if engaged:
+            return self.command("SHUTTER O") # Counterintuitively, this blocks the light
+        if not engaged:
+            return self.command("SHUTTER C") # This allows light through the slit
+    
+    # moves the filter wheel
+    def filterW(self, setting):
+        if isinstance(setting,int):
+            if setting < 7:
+                if setting > 0:
+                    return self.command("FILTER "+str(setting))
+        else: return 0
+                    
     
     def close(self):
         self.ser.close()

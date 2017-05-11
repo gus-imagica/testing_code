@@ -7,7 +7,7 @@ Created on Mon May  8 13:07:26 2017
 
 import serial
 
-ser = serial.Serial("COM5", timeout = 1)
+ser = serial.Serial("COM5", timeout = 3)
 
 print(ser.isOpen())
 
@@ -24,5 +24,6 @@ while True:
     else:
         cmd = cmd+'\r\n'
         ser.write(cmd.encode("utf-8"))
-        out = ser.read(100)
-        print('Receiving...'+out.decode('ascii'))
+        echo = ser.readline()
+        out = ser.readline()
+        print('Receiving... '+out.decode('ascii'))
