@@ -15,13 +15,13 @@ Since the thermocouple has poor resolution, the fitting process is complicated.
 @author: Gus
 """
 
+
+from _Keysight_SMU import Keysight
+
 import matplotlib.pyplot as plt
-from keysight import Keysight
 import numpy as np
-from labjackU3LV import Labjack
 import os
 import time
-from scipy.interpolate import interp1d as interp
 from scipy.optimize import curve_fit
 import scipy.ndimage
 

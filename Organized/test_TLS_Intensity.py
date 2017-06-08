@@ -5,11 +5,12 @@ Created on Wed May 10 15:51:52 2017
 @author: Gus
 """
 
+from _Newport_TLS import TLS
+from _Photodiode_Cal import diodeCal
+from _Keysight_SMU import Keysight
+
 import numpy as np
-from newportTLS import TLS
 import matplotlib.pyplot as plt
-from keysight import Keysight
-from photodiode_calibration import diodeCal
 import os
 
 """

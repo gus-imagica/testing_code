@@ -8,10 +8,11 @@ using the Labjack DAC. Good for finding the settling time of the ULS.
 @author: Gus
 """
 
+from _Labjack_DAC import Labjack
+from _Keysight_SMU import Keysight
+
 import matplotlib.pyplot as plt
-from keysight import Keysight
 import numpy as np
-from labjackU3LV import Labjack
 import os
 import time
 

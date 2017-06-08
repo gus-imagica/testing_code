@@ -9,7 +9,6 @@ filter setting and converts it to power and photon intensity values.
 """
 
 import matplotlib.pyplot as plt
-
 import numpy as np
 from newportTLS import TLS
 from keysight import Keysight

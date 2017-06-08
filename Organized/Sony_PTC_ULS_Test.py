@@ -12,17 +12,16 @@ appropriate selection of voltages to drive the ULS.
 @author: Gus
 """
 
+from _FTDI_Sensor import sensor
+from _Keysight_SMU import Keysight
+from _Rigol_Power_Supply import Rigol
 
-from FTDI_cam import sensor
 import matplotlib.pyplot as plt
 
 import numpy as np
-from labjackU3LV import Labjack
+
 import os
 import time
-from keysight import Keysight
-from photodiode_calibration import diodeCal
-from rigolDP832 import Rigol
 
 
 """

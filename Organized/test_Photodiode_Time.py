@@ -8,14 +8,13 @@ Useful for taking dark current measurements with temperature.
 @author: Gus
 """
 
+from _Photodiode_Cal import diodeCal
+from _Keysight_SMU import Keysight
+
 import matplotlib.pyplot as plt
-from keysight import Keysight
 import numpy as np
-from labjackU3LV import Labjack
 import os
 import time
-from photodiode_calibration import diodeCal
-
 
 """
 Settings

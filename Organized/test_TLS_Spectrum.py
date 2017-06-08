@@ -5,11 +5,11 @@ Created on Mon May  8 14:03:13 2017
 @author: Gus
 """
 
+from _Newport_TLS import TLS
+from _Jaz_Spectrometer import Spect
+
 import numpy as np
-from newportTLS import TLS
-from jazSpect import Spect
 import matplotlib.pyplot as plt
-from scipy.stats import norm
 
 filterW = 1
 

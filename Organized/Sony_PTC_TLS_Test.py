@@ -10,13 +10,11 @@ the exposure times.
 """
 
 
-from FTDI_cam import sensor
-import matplotlib.pyplot as plt
+from _Newport_TLS import TLS
+from _FTDI_Sensor import sensor
 
+import matplotlib.pyplot as plt
 import numpy as np
-from newportTLS import TLS
-#from keysight import Keysight
-#from photodiode_calibration import diodeCal
 import os
 import time
 

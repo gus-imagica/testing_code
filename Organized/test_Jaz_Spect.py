@@ -7,9 +7,10 @@ This script continuously plots the output of the Jaz Spectrometer.
 This is a temporary script file.
 """
 
+from _Jaz_Spectrometer import Spect
+
 import matplotlib.pyplot as plt
 import numpy as np
-from jazSpect import Spect
 
 """ Settings """
 

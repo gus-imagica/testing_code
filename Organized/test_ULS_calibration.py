@@ -7,11 +7,12 @@ Used to find the correspondence between input voltage and output power of the UL
 @author: Gus
 """
 
+from _Labjack_DAC import Labjack
+from _Keysight_SMU import Keysight
+# from _Rigol_Power_Supply import Rigol
+
 import numpy as np
 import matplotlib.pyplot as plt
-from keysight import Keysight
-from labjackU3LV import Labjack
-#from photodiode_calibration import diodeCal
 import time
 import os
 

@@ -43,13 +43,13 @@ Outline
 @author: Gus
 """
 
-from FTDI_cam import sensor
-import matplotlib.pyplot as plt
+from _Newport_TLS import TLS
+from _FTDI_Sensor import sensor
+from _Photodiode_Cal import diodeCal
+from _Keysight_SMU import Keysight
 
 import numpy as np
-from newportTLS import TLS
-from keysight import Keysight
-from photodiode_calibration import diodeCal
+import matplotlib.pyplot as plt
 import os
 import time
 

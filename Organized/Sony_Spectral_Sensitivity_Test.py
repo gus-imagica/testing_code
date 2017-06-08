@@ -6,24 +6,26 @@ Created on Tue May 16 10:45:55 2017
 """
 
 import numpy as np
-from newportTLS import TLS
+from _Newport_TLS import TLS
 import matplotlib.pyplot as plt
-from FTDI_cam import sensor
-from TLS_Calibration import TLS_Cal
+from _FTDI_Sensor import sensor
+from _TLS_Spectrum import TLS_Cal
 import os
 
 """
 Settings
 """
 
+dark_level = 98
+
 filterW = 1 # Wheel 1 is no filter
 
 # wavelengths
-steps = 100
+steps = 200
 minimum = 350
 maximum = 1000
 
-integ_ms = 50
+integ_ms = 10
 
 save_file = False
 
@@ -59,14 +61,14 @@ try:
         """ Read sensor """
         array = sens.get_spect()
 
-        av_level = np.mean(array[800:1100])
+        av_level = np.mean(array[800:1100])-dark_level
         
         level_av = np.append(level_av, av_level)
         
     newp.set_lambda(550) #reset it to something we can see.
     
     plt.figure(figsize = (9, 7))
-    plt.plot(TLS_lam, level_av)
+    plt.plot(TLS_lam, level_av, ls = "--", marker = "o", ms = 4)
     plt.ylabel('sensor level')
     plt.xlabel('wavelength (nm)')
     
@@ -74,7 +76,7 @@ try:
     sensitivity = np.divide(level_av, power_func(TLS_lam))
     
     plt.figure(figsize = (9,7))
-    plt.plot(TLS_lam, sensitivity)
+    plt.plot(TLS_lam, sensitivity, ls = "-", marker = "o", ms = 4)
     plt.ylabel('adjusted sensitivity (W)')
     plt.xlabel('wavelength (nm)')
     

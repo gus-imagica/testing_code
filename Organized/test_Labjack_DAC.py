@@ -8,7 +8,7 @@ testing any of its other functions.
 @author: Gus
 """
 
-from labjackU3LV import Labjack
+from _Labjack_DAC import Labjack
 import time
 
 # initialize
