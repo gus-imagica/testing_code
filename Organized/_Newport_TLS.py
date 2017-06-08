@@ -2,6 +2,9 @@
 """
 Created on Tue May  2 14:05:22 2017
 
+This class contains useful functions for connecting to and controlling the
+Tunable Light Source from Newport.
+
 @author: Gus
 """
 

@@ -20,7 +20,7 @@ steps = 100
 minimum = 0
 maximum = 20
 
-save_file = True
+save_file = False
 
 file_suffix = ""
 

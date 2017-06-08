@@ -9,6 +9,7 @@ import numpy as np
 from newportTLS import TLS
 from jazSpect import Spect
 import matplotlib.pyplot as plt
+from scipy.stats import norm
 
 filterW = 1
 
@@ -29,22 +30,21 @@ test_lam = test_lam*(maximum-minimum)/steps+minimum
 
 maxima = np.array([])
 TLS_lam = np.array([])
-doubles = []
-
-#_ = newp.set_lambda(minimum)  
-#_ = newp.query("INFO?")
+fwhm = np.array([])
 
 for lam in test_lam:
     _ = newp.set_lambda(lam)
     TLS_lam = np.append(TLS_lam, newp.get_lambda())
     intens = jaz.get_intensities()
-    lamDouble = jaz.get_double_peak(intens)
-    if lamDouble is None:
-        doubles.append(False)
-        maxima = np.append(maxima, jaz.get_maximum(intens))
-    else:
-        doubles.append(True)
-        maxima = np.append(maxima, lamDouble[2])
+    
+    noise = np.median(intens)
+    intens = intens-noise
+    
+    p0 = [10000, lam, 10]
+    coeff = jaz.fit_norm(intens,p0)
+    
+    maxima = np.append(maxima, coeff[1])
+    fwhm = np.append(fwhm, coeff[2]*2.35)
 
 plt.figure(figsize = (9, 7))
 plt.plot(TLS_lam, maxima)
@@ -52,8 +52,8 @@ plt.ylabel('wavelength measured')
 plt.xlabel('wavelength nominal')
 
 plt.figure(figsize = (9, 7))
-plt.plot(TLS_lam, doubles)
-plt.ylabel('double peak')
+plt.plot(TLS_lam, fwhm)
+plt.ylabel('FWHM')
 plt.xlabel('wavelength nominal')
 
 #title = "Intensity Spectrum\n"
@@ -74,5 +74,4 @@ plt.xlabel('wavelength nominal')
 plt.show()
 
 jaz.close()
-
 newp.close()

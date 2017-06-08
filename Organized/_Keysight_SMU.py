@@ -2,6 +2,9 @@
 """
 Created on Tue May  2 14:05:22 2017
 
+This class connects to and controls the inputs and outputs of the Keysight
+B2987A electrometer.
+
 @author: Gus
 """
 
@@ -9,7 +12,7 @@ import visa
 
 class Keysight(object):
     
-    def __init__(self, self_cal = False, self_test = False, timeout_ms = 5000, default_connection = 0):
+    def __init__(self, self_cal = False, self_test = False, timeout_ms = 10000, default_connection = 0):
         # Find resources
         rm = visa.ResourceManager()
         rl = rm.list_resources()
@@ -93,7 +96,7 @@ class Keysight(object):
         self.inst.write(":OUTP ON")
         
     def set_output_voltage(self, volt):
-        if volt < 20 and volt >= 0: # Limited for the photodiode opperation
+        if volt < 25 and volt >= 0: # Limited for the photodiode opperation
             self.inst.write(":SOUR:VOLT "+str(volt))
         
     def stop_output_voltage(self):

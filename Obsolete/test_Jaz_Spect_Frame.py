@@ -2,6 +2,8 @@
 """
 Created on Mon May  8 14:03:13 2017
 
+This function plots a spectrum from the Jaz spectrometer.
+
 @author: Gus
 """
 

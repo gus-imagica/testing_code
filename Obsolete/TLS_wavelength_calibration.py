@@ -29,6 +29,7 @@ test_lam = test_lam*(maximum-minimum)/steps+minimum
 
 maxima = np.array([])
 TLS_lam = np.array([])
+
 doubles = []
 
 #_ = newp.set_lambda(minimum)  

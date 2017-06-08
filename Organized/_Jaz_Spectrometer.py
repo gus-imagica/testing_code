@@ -2,12 +2,15 @@
 """
 Spyder Editor
 
+This class controls the Jaz spectrometer.
+
 This is a temporary script file.
 """
 
 import matplotlib.pyplot as plt
 import seabreeze.spectrometers as sb
 import numpy as np
+from scipy.optimize import curve_fit
 
 class Spect(object):
     
@@ -97,7 +100,17 @@ class Spect(object):
         plt.suptitle(title)
         
         plt.show()
-            
+        
+    def _gauss(self, x, *p):
+        A, mu, sig = p
+        return A*np.exp(-(x-mu)**2/(2.*sig**2))
+        
+    def fit_norm(self, intens, p0 = [10000, 600, 20]):
+        coeff, var_matrix = curve_fit(self._gauss, self.wavelengths, intens, p0 = p0)
+        fit = self._gauss(self.wavelengths, *coeff)
+
+        return coeff
+        
     
     def close(self):
         self.spec.close()

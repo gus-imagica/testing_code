@@ -2,12 +2,14 @@
 """
 Created on Mon May  8 13:07:26 2017
 
+This function connects to a serial port and allows commands to be sent.
+
 @author: Gus
 """
 
 import serial
 
-ser = serial.Serial("COM5", timeout = 3)
+ser = serial.Serial("COM4", timeout = 3, baudrate = 115200)
 
 print(ser.isOpen())
 
@@ -15,15 +17,13 @@ print(ser.name)
 
 while True:
     cmd = input("Enter command or 'exit':")
-        # for Python 2
-    # cmd = input("Enter command or 'exit':")
-        # for Python 3
     if cmd == 'exit':
         ser.close()
         break
     else:
-        cmd = cmd+'\r\n'
+        cmd = cmd+'\r'
         ser.write(cmd.encode("utf-8"))
         echo = ser.readline()
-        out = ser.readline()
-        print('Receiving... '+out.decode('ascii'))
+        print('Received: '+repr(echo.decode('ascii')))
+#        out = ser.readline()
+#        print('Received: '+out.decode('ascii'))
