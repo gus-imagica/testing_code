@@ -10,6 +10,7 @@ This class controls the Sony sensors through the FTDI chip.
 import serial
 import numpy as np
 from time import sleep
+import matplotlib.pyplot as plt
 
 class sensor(object):
     
@@ -107,3 +108,8 @@ class sensor(object):
     
     def close(self):
         self.ser.close()
+        
+    def print_frame(self):
+        frame = self.get_spect()
+        plt.figure(figsize = (12, 7))
+        plt.plot(frame, ".", linewidth = 0.5, ms = 1.5)

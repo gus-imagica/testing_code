@@ -46,9 +46,10 @@ class Labjack(object):
             # print(actualV)
             return actualV
         
-    def set_pwm(self, duty):        
+    def set_pwm(self, duty): 
+        self.u.configTimerClock(TimerClockBase=6, TimerClockDivisor=7) # 187500/7 = 26785.7 Hz
         set_bits = 65536-int(duty*65536)
-        self.u.getFeedback(u3.TimerConfig(timer = 0, TimerMode=1, Value=set_bits))
+        self.u.getFeedback(u3.TimerConfig(timer = 0, TimerMode=1, Value=set_bits)) # Timer 0 is FIO0 unless we added an offset
         
     def update_pwm(self, duty):
         set_bits = 65536-int(duty*65536)

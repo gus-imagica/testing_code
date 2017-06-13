@@ -21,7 +21,7 @@ dark_level = 98
 filterW = 1 # Wheel 1 is no filter
 
 # wavelengths
-steps = 200
+steps = 300
 minimum = 350
 maximum = 1000
 
