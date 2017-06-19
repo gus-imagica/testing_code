@@ -1,0 +1,12 @@
+What to do with a new raspberry pi:
+
+1. Install the latest NOOBS install package onto an SD card from the raspberry pi website. Follow these instructions: https://www.raspberrypi.org/documentation/installation/noobs.md
+
+2. With the raspberry pi connected to a monitor and keyboard, boot the pi from the SD card and install the Raspbian operating system.
+
+3. Connect to the internet: https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md
+
+4. Remote connect to the pi from a laptop: https://www.realvnc.com/docs/raspberry-pi.html#raspberry-pi-setup
+
+5. Install git: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+
