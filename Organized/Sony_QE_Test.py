@@ -53,6 +53,9 @@ import matplotlib.pyplot as plt
 import os
 import time
 
+import warnings
+warnings.filterwarnings("ignore",".*GUI is implemented.*")
+
 """
 Settings
 """
@@ -66,7 +69,12 @@ find_sat_ms = True
 sat_ms_default = 200
 steps_ms = 50
 
-pixel_area = 14*56e-12 # From spec sheet
+# Ratio of saturation exposure times
+low_time_multiplier = 0.1
+high_time_multiplier = 0.7
+
+pixel_area = 14*56e-12 # ILX554
+#pixel_area = 14*200e-12 # ILX511
 integ_offset = 4.3 # This is how many milliseconds the integration takes if the time is set to 0.
 
 filterW = 1 # Wheel 1 is no filter, wheel 3 is dark
@@ -78,17 +86,27 @@ save_file = False
 
 file_suffix = "trial"
 
+middle_range = 0.2
+num_pixels = 2048
+
 reps = 2
 
 """
 Code
 """
-
 t = time.time()
 
-sens = sensor(port = "COM6", print_out = False)
+roi_ind1 = int(num_pixels*(0.5-0.5*middle_range))
+roi_ind2 = int(num_pixels*(0.5+0.5*middle_range))
+
+sens = sensor(port = "COM7", print_out = False)
 keys = Keysight()
 newp = TLS()
+
+def closeall():
+    sens.close()
+    keys.close()
+    newp.close()
 
 try:
     """
@@ -121,20 +139,22 @@ try:
         sat_ms = 0
         sat_var = 0
         integ_ms = start_integ_ms
-        while integ_ms<0:
+        while integ_ms<max_integ_ms:
+            print("Integration time: ", integ_ms)
             sens.set_aper(integ_ms)
-            frame1 = sens.get_spect()
-            frame2 = sens.get_spect()
-            var = np.var([frame1,frame2],0)
+            frame1 = sens.get_spect()[roi_ind1:roi_ind2]
+            frame2 = sens.get_spect()[roi_ind1:roi_ind2]
+            var = np.var([frame1,frame2],0,ddof=1)
             var_av = np.mean(var)
             var_av_a = np.append(var_av_a, var_av)
+            integ_ms_a = np.append(integ_ms_a, integ_ms)
             if var_av > sat_var:
                 sat_ms = integ_ms
                 sat_var = var_av
-            if np.mean(frame1)>4050: # its obviously maxed out here. Right?
+            if var_av<0.1*sat_var: # its obviously maxed out here. Right?
                 break
             
-            integ_ms *= multiplier
+            integ_ms = np.ceil(integ_ms*multiplier)
             
         plt.figure()
         plt.loglog(integ_ms_a, var_av_a)
@@ -142,15 +162,20 @@ try:
         plt.xlabel("Integration Time (ms)")
         plt.ylabel("Digital value variance (unitless)")
         plt.title("Finding the saturation exposure")
+        plt.pause(0.01)
     else:
         sat_ms = sat_ms_default
     
+    print("Saturation exposure: ", sat_ms, " ms")
+    
     # Generate list of integration times to test over 
-    start_ms = sat_ms*0.1
-    end_ms = sat_ms*0.7
+    start_ms = sat_ms*low_time_multiplier
+    end_ms = sat_ms*high_time_multiplier
     steps = steps_ms
     test_ms = np.array(range(steps+1))
     test_ms = test_ms*(end_ms-start_ms)/steps+start_ms
+    test_ms = np.unique(test_ms.astype(int))
+    test_ms = test_ms.astype(float)
     
     """
     Dark values and noise:
@@ -166,15 +191,16 @@ try:
     dark_var = np.zeros_like(test_ms)
     for ind, integ_ms in enumerate(test_ms):
         sens.set_aper(integ_ms)
-        frame1 = sens.get_spect()
-        frame2 = sens.get_spect()
-        var = np.var([frame1,frame2],0)
+        frame1 = sens.get_spect()[roi_ind1:roi_ind2]
+        frame2 = sens.get_spect()[roi_ind1:roi_ind2]
+        var = np.var([frame1,frame2],0,ddof=1)
         var_av = np.mean(var)
         dark_var[ind] = var_av
         mean = np.mean([frame1,frame2])
         dark_mean[ind] = mean
     
     dark_curr = keys.get_current()
+    print("Dark current: ", dark_curr, " Amps")
     
     """
     Light values and noise:
@@ -195,10 +221,10 @@ try:
     light_curr = np.zeros_like(test_ms)
     for ind, integ_ms in enumerate(test_ms):
         sens.set_aper(integ_ms)
-        frame1 = sens.get_spect()
-        frame2 = sens.get_spect()
-        curr = keys.get_current
-        var = np.var([frame1,frame2],0)
+        frame1 = sens.get_spect()[roi_ind1:roi_ind2]
+        frame2 = sens.get_spect()[roi_ind1:roi_ind2]
+        curr = keys.get_current()
+        var = np.var([frame1,frame2],0,ddof=1)
         var_av = np.mean(var)
         light_var[ind] = var_av
         mean = np.mean([frame1,frame2])
@@ -214,7 +240,7 @@ try:
     photon_intensity = photons_persec/diode.area
     
     exposure_ms = test_ms + integ_offset # the way the sensor works
-    irradiation = np.multiply(exposure_ms, photon_intensity)*pixel_area
+    irradiation = np.multiply(exposure_ms, photon_intensity)*pixel_area/1000
     
     """
     Responsivity (R):
@@ -228,7 +254,7 @@ try:
     plt.pause(0.01)
     
     R, intercept = np.polyfit(irradiation, light_mean-dark_mean, 1)
-    print("Responsivity: ", R)
+    print("Responsivity (R): ", R)
     
     abline_values = [R * i + intercept for i in irradiation]
     plt.plot(irradiation, abline_values)
@@ -265,9 +291,9 @@ try:
     """
     plt.figure()
     plt.plot(exposure_ms, dark_var, 'bo')
-    plt.xlabel("Digital value mean (dark offset removed)")
-    plt.ylabel("Digital value variance (dark offset removed)")
-    plt.title("System gain")
+    plt.xlabel("Exposure (ms)")
+    plt.ylabel("Digital dark variance")
+    plt.title("Temporal Dark Noise")
     plt.pause(0.01)
     
     slope, dark_var_min = np.polyfit(exposure_ms, dark_var, 1)

@@ -34,9 +34,9 @@ repeats = 4 # number of times to take data and overlay
 
 reps = 2 # number of samples to generate the standard deviation
 
-multiplier = 1.1
-minimum_V = 0
+minimum_V = 0.01
 maximum_V = 4
+steps_V = 50
 
 integ_time_ms = 30
 
@@ -68,13 +68,7 @@ try:
     """ Initialize """
     # Build an array of the test voltages
     
-    test_volt = np.array([minimum_V])
-    while test_volt[-1] < maximum_V:
-        last_V = test_volt[-1]
-        next_V = np.round(multiplier*last_V,2)
-        if next_V == last_V:
-            next_V = last_V+0.01
-        test_volt = np.append(test_volt, next_V)
+    test_volt = 0.01*(np.unique(np.geomspace(minimum_V*100,maximum_V*100,steps_V).astype(int)))
 
     sens.set_aper(integ_time_ms)
     sens.set_reps(1)

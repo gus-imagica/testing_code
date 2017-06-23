@@ -4,7 +4,7 @@ Created on Fri May 19 15:37:17 2017
 
 Creates a photon transfer curve using the varying exposure method with the
 Tunable Light Source set to a specific wavelength. Only one pass is made through
-the exposure times.
+the exposure times. Uses a geometric series of exposure times.
 
 @author: Gus
 """
@@ -28,9 +28,9 @@ Settings
 #end_lam = 650
 lam = 400
 
-steps_integ_ms = 20
-start_integ_ms = 1500
-end_integ_ms = 4000
+steps_integ_ms = 200
+start_integ_ms = 1
+end_integ_ms = 5000
 
 integ_offset = 4.3 # this is how many milliseconds the integration takes if the time is set to 0.
 
@@ -50,7 +50,7 @@ Code
 
 t = time.time()
 
-sens = sensor(port = "COM6", print_out = False)
+sens = sensor(port = "COM7", print_out = False)
 
 newp = TLS()
 
@@ -66,8 +66,9 @@ try:
 #    test_lam = test_lam*(end_lam-start_lam)/steps_lam+start_lam
     
     # Build an array of the test exposures
-    test_exp = np.array(range(steps_integ_ms+1))
-    test_exp = test_exp*(end_integ_ms-start_integ_ms)/steps_integ_ms+start_integ_ms
+#    test_exp = np.array(range(steps_integ_ms+1))
+#    test_exp = test_exp*(end_integ_ms-start_integ_ms)/steps_integ_ms+start_integ_ms
+    test_exp = np.unique(np.geomspace(start_integ_ms,end_integ_ms,steps_integ_ms).astype(int))
     
 #    noise_array = np.empty((len(test_lam),len(test_exp)))
 #    average_array = np.empty((len(test_lam),len(test_exp)))
@@ -89,14 +90,14 @@ try:
         for i in range(reps): # is this enough to assess noise?
             """ Get one frame and normalize to it """
             frame1 = sens.get_spect()[7:]
-            frame1_average = np.median(frame1)
+            frame1_average = np.mean(frame1)
             """ Read sensor """
             #print("Reading Sony Sensor...")
             frame2 = sens.get_spect()[7:]
-            frame2_average = np.median(frame2)
+            frame2_average = np.mean(frame2)
             frame2 = frame2+frame1_average-frame2_average # normalize
             
-            noise = np.std([frame1, frame2], 0)
+            noise = np.std([frame1, frame2], 0, ddof = 1)
             average = frame1_average
 
             if max(frame1) == 4095:
@@ -119,11 +120,24 @@ try:
      
     plt.figure(figsize = (15,9))
     linax = plt.subplot(121)
+    
+    # We only want to see the slope in the linear region.
+    slopeind1 = (np.abs(test_exp-0.01*max(test_exp))).argmin()
+    slopeind2 = (np.abs(test_exp-0.4*max(test_exp))).argmin()
+    fit_exp = test_exp[slopeind1:slopeind2]
+    slope, intercept = np.polyfit(np.log(fit_exp), np.log(noise_array[slopeind1:slopeind2]),1)
+    print("Linear region slope: ", slope)
+    fit_noise = np.exp(intercept)*np.power(fit_exp,slope)
+    
 #    for i in range(lam_ind):
 #        plt.plot(test_exp, noise_array[i,:])
 #    plt.legend(names)
-    plt.plot(test_exp, noise_array)    
-
+    plt.plot(test_exp, noise_array, 'bo')
+    plt.plot(fit_exp, fit_noise, 'r-')
+    plt.xlabel("Exposure time (ms)")
+    plt.ylabel("Digital standard deviation")
+    plt.legend(["Data", "Fit"]) 
+    
     logax = plt.subplot(122)
     logslope = []
 #    for i in range(lam_ind):
@@ -131,25 +145,29 @@ try:
 #        slope, intercept = np.polyfit(np.log(test_exp), np.log(noise_array[i,:]),1)
 #        logslope.append(slope)
 #    plt.legend(names)
-    plt.loglog(test_exp, noise_array)
-    slope, intercept = np.polyfit(np.log(test_exp), np.log(noise_array),1)
-    print(slope)
+    plt.loglog(test_exp, noise_array,'bo')
+    plt.loglog(fit_exp, fit_noise, 'r-')
     
-    plt.figure()
-    plt.plot(test_exp, average_array)
+    plt.xlabel("Exposure time (ms)")
+    plt.ylabel("Digital standard deviation")
+    plt.legend(["Data", "Fit (Slope = %s)" % slope]) 
+    
+#    plt.figure()
+#    plt.plot(test_exp, average_array)
             
     
 
     if save_file:
         file_base = "//READYSHARE/USB_Storage/GusFiles/test_data"
         file_path = file_base+"/SonyPTC_TLS_"+file_suffix+"%s.txt"
+        # file_path = file_base+"/ILX554_PTC_TLS_3diffuser_400nm.txt"
         number = 1
         while os.path.exists(file_path % number):
             number += 1
             
         f = open(file_path % number, "wb")
         
-        head = "exposure_time_ms, median level, noise"
+        head = "exposure_time_ms, median_level, standard_deviation"
 #        savedata = np.concatenate((test_exp[:,None],np.transpose(noise_array)),axis=1)
         savedata = [test_exp, average_array, noise_array]
         np.savetxt(f, savedata, header = head, delimiter = "\t") 

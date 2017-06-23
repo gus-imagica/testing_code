@@ -9,7 +9,7 @@ This function connects to a serial port and allows commands to be sent.
 
 import serial
 
-ser = serial.Serial("COM4", timeout = 3, baudrate = 115200)
+ser = serial.Serial("COM3", timeout = 3, baudrate = 115200)
 
 print(ser.isOpen())
 

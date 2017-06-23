@@ -86,7 +86,9 @@ class TLS(object):
         if isinstance(setting,int):
             if setting < 7:
                 if setting > 0:
-                    return self.command("FILTER "+str(setting))
+                    success = self.command("FILTER "+str(setting))
+                    self.get_lambda() # This ensures the process completes before the next thing.
+                    return success
         else: return 0
                     
     

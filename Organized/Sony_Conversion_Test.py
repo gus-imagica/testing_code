@@ -30,10 +30,8 @@ lux_perWmm = 683.002 # conversion factor
 
 aper_time = 0.5
 
-integ_ms = 2000
+integ_ms = 100
 integ_offset = 4.3 # this is how many milliseconds the integration takes if the time is set to 0.
-
-filterW = 1 # Wheel 1 is no filter
 
 auto_range = False
 max_amps = 2e-10
@@ -46,7 +44,7 @@ file_suffix = "diffuser"
 Code
 """
 
-sens = sensor(port = "COM6", print_out = False)
+sens = sensor(port = "COM7", print_out = False)
 
 newp = TLS()
 
@@ -56,7 +54,7 @@ try:
     """ Initialize """
     # Initilize SMU
     keys.set_output_voltage(bias_voltage) # Bit of an arbitrary choice. Shouldn't matter much.
-    newp.filterW(filterW)
+    newp.filterW(1)
     keys.set_aper(aper_time)
     
     # Initialize TLS
@@ -84,7 +82,12 @@ try:
     
     temp = keys.get_temperature()   
     print("Temperature: "+str(temp))
-    dark_current = diode.dark(temp)
+    
+    newp.filterW(3)
+    dark_current = keys.get_current()
+   
+    newp.filterW(1)
+#    dark_current = diode.dark(temp)
 #    dark_current = 3.5775e-11
     print("Dark current: ", dark_current)
     
@@ -137,7 +140,7 @@ try:
     
     print("Efficiency (uV/photon): ", av_voltage/photons*1000000)
     
-    QE = 0.25 # This is a guess! 
+    QE = 0.4256 # From the QE test.
     print("Estimated QE: ",QE*100,"%")
     
     electrons = QE*photons

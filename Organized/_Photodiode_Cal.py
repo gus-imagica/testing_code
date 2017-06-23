@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class diodeCal(object):
-    def __init__(self, filepath = "C:/Users/Gus/Google Drive/Testing/Equipment/Photodiodes/PhotodiodeCal.txt"):
+    def __init__(self, filepath = r"C:\Users\Gus\GoogleDrive\GeneralShare\Testing\Equipment/Photodiodes/PhotodiodeCal.txt"):
         cal_file = open(filepath, 'r')
         
         result = []

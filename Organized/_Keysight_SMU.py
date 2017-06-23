@@ -19,8 +19,17 @@ class Keysight(object):
         # Get the keysight
         if len(rl)>1:
             print("Available resources: ",rl)
-            print("Connecting to "+rl[default_connection])
-        inst = rm.open_resource(rl[default_connection])
+            # print("Connecting to "+rl[default_connection])
+            for i in range(len(rl)):
+                try:
+                    inst = rm.open_resource(rl[i])
+                    print("Connected to "+rl[i])
+                    break
+                except:
+                    pass
+        else:
+            inst = rm.open_resource(rl[0])
+        
         self.inst = inst
         self.set_timeout(timeout_ms)
 

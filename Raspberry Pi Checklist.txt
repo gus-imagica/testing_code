@@ -10,3 +10,6 @@ What to do with a new raspberry pi:
 
 5. Install git: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 
+6. Clone repositories from git: https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository
+
+7. Install Labjack: https://github.com/labjack/LabJackPython

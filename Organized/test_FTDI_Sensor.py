@@ -17,10 +17,10 @@ import numpy as np
 
 """ Settings """
 frames = 1
-integ_time = 10
+integ_time = 1
 
 """ Initialize """
-sens = sensor(port = "COM6", print_out = False)
+sens = sensor(port = "COM7", print_out = False)
 
 try:    
     sens.set_aper(integ_time)

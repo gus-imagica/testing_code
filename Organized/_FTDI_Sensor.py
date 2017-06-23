@@ -9,19 +9,23 @@ This class controls the Sony sensors through the FTDI chip.
 
 import serial
 import numpy as np
-from time import sleep
+import time
 import matplotlib.pyplot as plt
+
+""" settings """
+divider = ","
 
 class sensor(object):
     
-    def __init__ (self, port = "COM4", timeout_s = 1, print_out = False):
+    def __init__ (self, port = "COM4", timeout_s = 10, print_out = False):
         self.print_out = print_out
-        self.ser = serial.Serial(port, timeout = timeout_s, baudrate = 115200)
+        self.timeout_s = timeout_s
+        self.ser = serial.Serial(port, timeout = self.timeout_s, baudrate = 115200)
         if not self.ser.isOpen():
             raise Exception("Serial port at "+port+" was not opened successfully.")
         self.ser.flush()
-        sleep(0.1)
-        self.command("F ")
+        time.sleep(0.1)
+        self.command("F,")
         self.command("E1")
         self.integ_ms = None
         self.reps = None
@@ -30,15 +34,18 @@ class sensor(object):
         cmd = string+'\r'
         cmd_bin = cmd.encode("utf-8")
         self.ser.write(cmd_bin)
-#        if self.print_out:
-#            print(cmd_bin)
-        sleep(0.001)
+        if self.print_out:
+            print(cmd_bin)
+        time.sleep(0.001)
         out = b""
         # Look for buffered data
 #        trys = 200
 #        while trys > 0:
+        start_t = time.time()
         while True:
             data_count = self.ser.inWaiting()
+#            if self.print_out:
+#                print("data_count: ", data_count)
             if data_count>0:
                 out1 = self.ser.read(data_count)
                 out += out1
@@ -48,12 +55,13 @@ class sensor(object):
                     break
                 else:
                     continue
-            
-        out = out.decode('ascii')
-        out = out.strip()
-            
+            if time.time()-start_t > self.timeout_s:
+                out = None
+                break
             
         if out is not None:
+            out = out.decode('ascii')
+            out = out.strip()
             if self.print_out:
                 print(repr(out))
                 print(len(out))
@@ -67,23 +75,31 @@ class sensor(object):
     def command(self, string, expected = ""):
         cmd = string+'\r'
         self.ser.write(cmd.encode("utf-8"))
-        
+        if self.print_out:
+            print("Sent: ", repr(cmd))
         # Look for buffered data
         outp = ""
+        start_t = time.time()
         while True:
-            sleep(0.001)
+            time.sleep(0.001)
             data_count = self.ser.inWaiting()
+            if self.print_out:
+                print("data_count: ", data_count)
             if data_count>0:
                 out = self.ser.read(data_count)
                 out = out.decode('ascii')
+#                if self.print_out:
+#                    print(repr(out))
                 outp += out
                 if "\r" in outp:
                     break
                 else:
                     continue
-        
+            if time.time()-start_t > self.timeout_s:
+                out = None
+                break
         if self.print_out:
-            print(repr(outp))
+            print("Received: ", repr(outp))
             
         if expected in outp:
             return True
@@ -93,9 +109,15 @@ class sensor(object):
     def get_spect(self):
         self.command("S", expected = "DONE")
         ret = self.query("G")
-        return np.array(list(map(int,ret.split())))
+        ret = ret.strip(divider)
+        arr = ret.split(divider)
+#        if self.print_out:
+#            print(repr(arr))
+        intarr = map(int, arr)
+        return np.array(list(intarr))
     
     def set_aper(self, time_ms):
+        time_ms = int(time_ms)
         self.command("I%s" % time_ms, expected = "I")
         self.integ_ms = time_ms
         
